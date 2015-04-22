@@ -28,7 +28,7 @@ public class UrlShortener {
     @Value("${urlshorten.url:http://localhost:${server.port:8080}}")
     String urlShortenUrl;
 
-    final ConcurrentHashMap<String, String> urlMap = new ConcurrentHashMap<>();
+    final ConcurrentHashMap<String, String> urlMap = new ConcurrentHashMap<>(); // key=hash, value=url
     final UrlValidator urlValidator = new UrlValidator(new String[]{"http", "https"});
 
     /**
@@ -46,7 +46,9 @@ public class UrlShortener {
                 throw new RuntimeException(e);
             }
 
-            // TODO (2) urlMapにhashに紐づくURLを追加する。
+            // FIXED_TODO (2) urlMapにhashに紐づくURLを追加する。
+            urlMap.put(hash, url);
+
             return new ResponseEntity<>(urlShortenUrl + "/" + hash, HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
