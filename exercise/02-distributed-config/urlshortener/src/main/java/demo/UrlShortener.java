@@ -17,7 +17,7 @@ import java.nio.charset.StandardCharsets;
 @EnableAutoConfiguration
 @ComponentScan
 @RestController
-//@RefreshScope
+@RefreshScope
 public class UrlShortener {
     public static void main(String[] args) {
         SpringApplication.run(UrlShortener.class, args);
