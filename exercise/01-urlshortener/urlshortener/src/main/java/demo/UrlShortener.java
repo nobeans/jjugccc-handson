@@ -47,7 +47,7 @@ public class UrlShortener {
             }
 
             // FIXED_TODO (2) urlMapにhashに紐づくURLを追加する。
-            urlMap.put(hash, url);
+            urlMap.putIfAbsent(hash, url);
 
             return new ResponseEntity<>(urlShortenUrl + "/" + hash, HttpStatus.OK);
         } else {
