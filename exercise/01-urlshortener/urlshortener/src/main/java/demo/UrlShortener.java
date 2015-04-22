@@ -2,10 +2,12 @@ package demo;
 
 import com.google.common.hash.Hashing;
 import org.apache.commons.validator.routines.UrlValidator;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.UnsupportedEncodingException;
-import java.util.concurrent.ConcurrentHashMap;
 
 @EnableAutoConfiguration
 @ComponentScan
@@ -28,7 +29,10 @@ public class UrlShortener {
     @Value("${urlshorten.url:http://localhost:${server.port:8080}}")
     String urlShortenUrl;
 
-    final ConcurrentHashMap<String, String> urlMap = new ConcurrentHashMap<>(); // key=hash, value=url
+    //final ConcurrentHashMap<String, String> urlMap = new ConcurrentHashMap<>(); // key=hash, value=url
+    @Autowired
+    StringRedisTemplate redisTemplate;
+
     final UrlValidator urlValidator = new UrlValidator(new String[]{"http", "https"});
 
     /**
@@ -47,7 +51,8 @@ public class UrlShortener {
             }
 
             // FIXED_TODO (2) urlMapにhashに紐づくURLを追加する。
-            urlMap.putIfAbsent(hash, url);
+            //urlMap.putIfAbsent(hash, url);
+            redisTemplate.opsForValue().set(hash, url);
 
             return new ResponseEntity<>(urlShortenUrl + "/" + hash, HttpStatus.OK);
         } else {
@@ -60,7 +65,9 @@ public class UrlShortener {
      */
     @RequestMapping(value = "{hash}", method = RequestMethod.GET)
     ResponseEntity<?> get(@PathVariable String hash) {
-        String url = urlMap.get(hash);
+        //String url = urlMap.get(hash);
+        String url = redisTemplate.opsForValue().get(hash);
+
         // 本当はリダイレクトするのだが、今回はレスポンスボディに入れて200を返す
         if (url != null) {
             return new ResponseEntity<>(url, HttpStatus.OK);
