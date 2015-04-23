@@ -32,7 +32,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
 
-import static java.util.Collections.singletonMap;
+import static java.util.Collections.*;
 
 @EnableAutoConfiguration
 @ComponentScan
@@ -55,6 +55,12 @@ public class App {
 
     @RequestMapping("/")
     String home() {
+        return "index";
+    }
+
+    @RequestMapping("/hoge")
+    String hoge() {
+        System.out.println(remoteCommand.hoge());
         return "index";
     }
 
@@ -97,6 +103,19 @@ class RemoteCommand {
     @Value("${urlshorten.api.url:http://localhost:8081}")
     String apiUrl;
     Logger logger = LoggerFactory.getLogger(RemoteCommand.class);
+
+    @HystrixCommand(fallbackMethod = "foo")
+    public String hoge() {
+        System.out.println("In hoge");
+        if (System.currentTimeMillis() % 7 != 0) {
+            throw new RuntimeException("HOGE!");
+        }
+        return "HOGE!";
+    }
+
+    public String foo() {
+        return "FOO!";
+    }
 
     @HystrixCommand(fallbackMethod = "defaultShorten")
     public String shorten(String url) {
